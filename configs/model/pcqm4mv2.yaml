@@ -7,7 +7,6 @@ extras:
   energy_weight: 0.0            # Weighting factor for energies in the loss function
   force_weight: 1.0             # Weighting factor for forces in the loss function
   denoising_weight: 1.0         # Weighting factor for denoising in the loss function.
-  test_interval: 1              # Test interval, one test per n epochs (default: 10)
 
 optimizer:
   _target_: torch.optim.AdamW
