@@ -4,7 +4,7 @@ import hydra
 import rootutils
 from lightning import LightningDataModule, LightningModule, Trainer
 from lightning.pytorch.loggers import Logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
@@ -49,9 +49,20 @@ def evaluate(cfg: DictConfig) -> Tuple[Dict[str, Any], Dict[str, Any]]:
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(cfg.data)
+    datamodule.prepare_data()
+    datamodule.setup("fit")
+
+    prior = None
+    if cfg.model.net.get("prior_model"):
+        log.info(f"Instantiating prior model <{cfg.model.net.prior_model._target_}>")
+        prior = hydra.utils.instantiate(cfg.model.net.prior_model, dataset = datamodule.dataset)
+        # Make config mutable, add the new key, and restore structure
+        OmegaConf.set_struct(cfg.model.net, False)
+        cfg.model.net.prior_args = prior.get_init_args()
+        OmegaConf.set_struct(cfg.model.net, True)
 
     log.info(f"Instantiating model <{cfg.model._target_}>")
-    model: LightningModule = hydra.utils.instantiate(cfg.model)
+    model: LightningModule = hydra.utils.instantiate(cfg.model, prior_model=prior, mean=datamodule.mean, std=datamodule.std)
 
     log.info("Instantiating loggers...")
     logger: List[Logger] = instantiate_loggers(cfg.get("logger"))
