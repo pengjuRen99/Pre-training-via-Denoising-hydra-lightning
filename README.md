@@ -46,3 +46,5 @@ pip install pyxtal==0.6.7 mofchecker==0.9.6 rdkit==2024.3.5 e3nn==0.5.1 posebust
 ## Reference
 
 Zaidi S, Schaarschmidt M, Martens J, et al. Pre-training via denoising for molecular property prediction[J]. arXiv preprint arXiv:2206.00133, 2022.
+
+Lightning-Hydra-Template
