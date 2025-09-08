@@ -245,7 +245,7 @@ class DataModule(LightningDataModule):
             batch_size=batch_size,
             shuffle=shuffle,
             num_workers=self.hparams.num_workers,
-            pin_memory=True,               
+            pin_memory=self.hparams.pin_memory,               
         )
 
         if store_dataloader:
