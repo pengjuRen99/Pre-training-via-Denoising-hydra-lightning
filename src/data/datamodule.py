@@ -77,7 +77,6 @@ class DataModule(LightningDataModule):
         denoising_weight: float = 1.0,
         denoising_only: bool = True,
         standardize: bool = False,
-        test_interval: int = 1,
     ) -> None:
         """Initialize a `MNISTDataModule`.
 
@@ -199,7 +198,7 @@ class DataModule(LightningDataModule):
         loaders = [self._get_dataloader(self.val_dataset, "val")]
         if (
             len(self.test_dataset) > 0
-            and self.trainer.current_epoch % self.hparams.test_interval == 0
+            # and self.trainer.current_epoch % self.hparams.test_interval == 0
         ):
             loaders.append(self._get_dataloader(self.test_dataset, "test"))
         return loaders
