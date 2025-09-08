@@ -161,7 +161,7 @@ class DataModule(LightningDataModule):
         # 为了一部分是有噪声的，一部分是无噪声的，因此用索引的方式分割
         self.idx_train, self.idx_val, self.idx_test = make_splits(
             len(self.dataset),
-            len(self.dataset) - self.hparams.train_val_test_split[1] - self.hparams.train_val_test_split[2],
+            self.hparams.train_val_test_split[0],
             self.hparams.train_val_test_split[1],
             self.hparams.train_val_test_split[2],
             seed=42,
@@ -245,7 +245,7 @@ class DataModule(LightningDataModule):
             batch_size=batch_size,
             shuffle=shuffle,
             num_workers=self.hparams.num_workers,
-            pin_memory=True,
+            pin_memory=True,               
         )
 
         if store_dataloader:
