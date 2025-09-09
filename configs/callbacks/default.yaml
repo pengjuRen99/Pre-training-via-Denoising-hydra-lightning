@@ -7,7 +7,7 @@ defaults:
 
 model_checkpoint:
   dirpath: ${paths.output_dir}/checkpoints
-  filename: "{step}-{epoch}-{val_loss:.4f}-{test_loss:.4f}-{train_per_step:.4f}"
+  filename: "step={step}-epoch={epoch}-val_loss={val_loss:.4f}-test_loss={test_loss:.4f}-train_per_step={train_per_step:.4f}"
   monitor: "val_loss"
   mode: "min"
   save_last: True
