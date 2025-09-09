@@ -9,7 +9,7 @@ splits: null  # Optionally provide your own train/val/test splits as list of ind
 train_val_test_split: [null, 100, 100]      # 10_000
 
 num_workers: 20
-pin_memory: False
+pin_memory: True
 
 data_arg: null                # Additional dataset argument, e.g. target property for QM9 or molecule for MD17
 coord_files: null             # Custom coordinate files glob
