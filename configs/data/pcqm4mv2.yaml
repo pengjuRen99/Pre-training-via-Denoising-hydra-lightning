@@ -2,7 +2,7 @@ _target_: src.data.datamodule.DataModule
 data_dir: ${paths.data_dir}/PCQM4MV2
 dataset_name: PCQM4MV2
 
-batch_size: 64 # Needs to be divisible by the number of devices (e.g., if in a distributed setup)
+batch_size: 70 # Needs to be divisible by the number of devices (e.g., if in a distributed setup)
 inference_batch_size: 70   # Batch size for inference, e.g., validation and testing
 
 splits: null  # Optionally provide your own train/val/test splits as list of indices. If None, use standard splits
