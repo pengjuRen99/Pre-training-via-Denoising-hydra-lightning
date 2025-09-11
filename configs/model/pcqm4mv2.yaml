@@ -18,8 +18,8 @@ optimizer:
 #   _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
 #   _partial_: true
 #   mode: min
-#   factor: 0.1          # Minimum learning rate before early stop
-#   patience: 10         # Patience for lr-schedule. Patience per eval-interval of validation
+#   factor: 0.8          # Minimum learning rate before early stop
+#   patience: 15         # Patience for lr-schedule. Patience per eval-interval of validation
 #   min_lr: 1e-7        # Minimum learning rate before early stopping
 
 scheduler:
