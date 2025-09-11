@@ -324,8 +324,8 @@ class LNNP(LightningModule):
         """
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())
         if self.hparams.scheduler is not None:
-            if self.hparams.scheduler == torch.optim.lr_scheduler.ReduceLROnPlateau:
-                scheduler = self.hparams.scheduler(optimizer=optimizer)
+            scheduler = self.hparams.scheduler(optimizer=optimizer)
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 return {
                     "optimizer": optimizer,
                     "lr_scheduler": {
@@ -335,16 +335,16 @@ class LNNP(LightningModule):
                         "frequency": 1,
                     },
                 }
-            elif self.hparams.scheduler == torch.optim.lr_scheduler.CosineAnnealingLR:
-                scheduler = self.hparams.scheduler(optimizer=optimizer)
-                return {
-                    "optimizer": optimizer,
-                    "lr_scheduler": {
-                        "scheduler": scheduler,
-                        "interval": "step",
-                        "frequency": 1,
-                    },
-                }
+            
+            # Fallback for other schedulers, assuming they are step-based.
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "interval": "step",
+                    "frequency": 1,
+                },
+            }
 
         return {"optimizer": optimizer}
     
