@@ -7,7 +7,7 @@ max_epochs: 30      # --num-epochs                      # pcqm4mv2: 30, ANI1: 30
 max_steps: 400000  # --num-steps, -1 means no limit     # pcqm4mv2: 400000, ANI1: null, MD17: null, QM9: 300000, 300000
 
 accelerator: gpu
-devices: 2
+devices: -1
 precision: 32   # choices=[16, 32]
 
 # mixed precision for extra speed-up
