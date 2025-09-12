@@ -107,7 +107,7 @@ def create_model(args, prior_model=None, mean=None, std=None):
 
 
 def load_model(filepath, args=None, device="cpu", mean=None, std=None, **kwargs):
-    ckpt = torch.load(filepath, map_location="cpu")
+    ckpt = torch.load(filepath, map_location="cpu", weights_only=False)
     if args is None:
         args = ckpt["hyper_parameters"]
 
