@@ -14,7 +14,6 @@ rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 from src.data import components
 from src.data.utils import make_splits, MissingEnergyException
-from src.models.components.priors import BasePrior
 
 
 class DataModule(LightningDataModule):
@@ -78,7 +77,7 @@ class DataModule(LightningDataModule):
         denoising_weight: float = 1.0,
         denoising_only: bool = True,
         standardize: bool = False,
-        prior_model: BasePrior = None,
+        prior_model: str = None,
     ) -> None:
         """Initialize a `MNISTDataModule`.
 
