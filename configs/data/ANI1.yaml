@@ -9,7 +9,7 @@ splits: null  # Optionally provide your own train/val/test splits as list of ind
 train_val_test_split: [0.8, 0.05, null]      # 10_000
 
 num_workers: 20
-pin_memory: False
+pin_memory: true
 
 data_arg: null                # Additional dataset argument, e.g. target property for QM9 or molecule for MD17
 coord_files: null             # Custom coordinate files glob
@@ -22,3 +22,4 @@ position_noise_scale: 0.    # Scale of Gaussian noise added to positions.
 denoising_weight: 0.         # Weighting factor for denoising in the loss function.
 denoising_only: False          # If the task is denoising only (then val/test datasets also contain noise).
 standardize: false            # If true, multiply prediction by dataset std and add mean
+prior_model: Atomref       # Which prior model to use      et. Atomref
