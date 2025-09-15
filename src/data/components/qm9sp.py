@@ -30,6 +30,8 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
         else:
             transform = Compose([transform, self._filter_label])
 
+        self.root = root
+
         super(QM9SP, self).__init__(root, transform=transform)
 
     @property
@@ -58,12 +60,16 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
         os.unlink(file_path)
 
     def process(self):
-        # 要提前下载QM9数据集，默认地址在../QM9/
-        pass
-    
+        # 要提前下载QM9数据集，默认地址在../data/QM9/raw/qm9_v3.pt       使用的qm9V3
+        # qm9sp
+        data_qm9sp = torch.load(os.path.join(self.raw_dir, "qm9s.pt"))           # root: ../data/QM9SP
+        # qm9
+        print(os.path.dirname(self.root))
+        data_list_qm9 = torch.load(os.path.join(os.path.dirname(self.root), "QM9/raw/qm9_v3.pt"))                # root: ../data/QM9/raw/qm9_v3.pt
+        # print
 
 
 if __name__ == "__main__":
-    dataset = QM9SP(root="/home/RenPengju/codes/multiModal_Fusion/Multimodal_Spectroscopic/data/qm9sp", dataset_arg="homo")
+    dataset = QM9SP(root="/home/RenPengju/codes/multiModal_Fusion/Multimodal_Spectroscopic/data/QM9SP", dataset_arg="homo")
     print(dataset)
     print(dataset[0])
