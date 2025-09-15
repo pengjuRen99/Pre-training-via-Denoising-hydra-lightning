@@ -2,6 +2,8 @@ import torch
 from torch_geometric.transforms import Compose
 from torch_geometric.datasets import QM9 as QM9_geometric
 from torch_geometric.nn.models.schnet import qm9_target_dict
+from torch_geometric.data import download_url, extract_zip
+import os
 
 
 class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, raman]
@@ -11,6 +13,8 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
             'train on via "dataset_arg". Available '
             f'properties are {", ".join(qm9_target_dict.values())}.'
         )
+
+        self.raw_url = 'https://figshare.com/ndownloader/articles/24235333/versions/3'
 
         self.label = dataset_arg
         if dataset_arg == "alpha":   # set this value as placeholder during pre-training
@@ -49,10 +53,14 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
         return batch
 
     def download(self):
-        pass
+        file_path = download_url(self.raw_url, self.raw_dir, filename='3')
+        extract_zip(file_path, self.raw_dir)
+        os.unlink(file_path)
 
     def process(self):
+        # 要提前下载QM9数据集，默认地址在../QM9/
         pass
+    
 
 
 if __name__ == "__main__":
