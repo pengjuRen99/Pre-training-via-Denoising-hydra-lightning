@@ -70,6 +70,6 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
 
 
 if __name__ == "__main__":
-    dataset = QM9SP(root="/home/RenPengju/codes/multiModal_Fusion/Multimodal_Spectroscopic/data/QM9SP", dataset_arg="homo")
+    dataset = QM9SP(root="/home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-training-via-Denoising-hydra-lightning/data/QM9SP", dataset_arg="homo")
     print(dataset)
     print(dataset[0])
