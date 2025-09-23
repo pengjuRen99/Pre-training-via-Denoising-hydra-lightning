@@ -18,8 +18,8 @@ energy_files: null            # Custom energy files glob
 force_files: null             # Custom force files glob
 energy_weight: 1.0            # Weighting factor for energies in the loss function
 force_weight: 1.0             # Weighting factor for forces in the loss function
-position_noise_scale: 0.    # Scale of Gaussian noise added to positions.
-denoising_weight: 0.         # Weighting factor for denoising in the loss function.
-denoising_only: False          # If the task is denoising only (then val/test datasets also contain noise).
+position_noise_scale: 0.04    # Scale of Gaussian noise added to positions.
+denoising_weight: 1.0         # Weighting factor for denoising in the loss function.
+denoising_only: True          # If the task is denoising only (then val/test datasets also contain noise).
 standardize: True            # If true, multiply prediction by dataset std and add mean
 prior_model: null       # Which prior model to use      et. Atomref
