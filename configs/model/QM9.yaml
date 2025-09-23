@@ -43,7 +43,7 @@ net:
   distance_influence: both                # Where distance information is included inside the attention, choices=['keys', 'values', 'both', 'none']
   attn_activation: silu                   # Attention activation function, choices=list(act_class_mapping.keys())
   num_heads: 8                            # Number of attention heads
-  layernorm_on_vec: null                  # Whether to apply an equivariant layer norm to vec features. Off by default. choices=['whitened']
+  layernorm_on_vec: whitened                  # Whether to apply an equivariant layer norm to vec features. Off by default. choices=['whitened']
   # other args
   derivative: false                       # If true, take the derivative of the prediction w.r.t coordinates
   cutoff_lower: 0.0                       # Lower cutoff for interatomic distances  
