@@ -55,9 +55,10 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
         return batch
 
     def download(self):
-        file_path = download_url(self.raw_url, self.raw_dir, filename='3')
-        extract_zip(file_path, self.raw_dir)
-        os.unlink(file_path)
+        pass
+        # file_path = download_url(self.raw_url, self.raw_dir, filename='3')
+        # extract_zip(file_path, self.raw_dir)
+        # os.unlink(file_path)
 
     def process(self):
         # 要提前下载QM9数据集，默认地址在../data/QM9/raw/qm9_v3.pt       使用的qm9V3
