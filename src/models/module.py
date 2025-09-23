@@ -116,6 +116,7 @@ class LNNP(LightningModule):
             factor=self.hparams.lr_factor,
             patience=self.hparams.lr_patience,
         )
+        self.val_loss = None
 
     def forward(self, z: torch.Tensor, pos: torch.Tensor, spec: torch.Tensor, batch=None) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
@@ -279,6 +280,7 @@ class LNNP(LightningModule):
                 "train_loss": torch.stack(self.losses["train"]).mean(),
                 "val_loss": torch.stack(self.losses["val"]).mean(),
             }
+            self.val_loss = result_dict["val_loss"]
 
             # add test loss if available
             if len(self.losses["test"]) > 0:
@@ -326,6 +328,38 @@ class LNNP(LightningModule):
                     self.losses["test_pos"]
                 ).mean()
 
+            # if contrast is present, also log it
+            if len(self.losses["train_contrast"]) > 0:
+                result_dict["train_loss_contrast"] = torch.stack(
+                    self.losses["train_contrast"]
+                ).mean()
+
+            if len(self.losses["val_contrast"]) > 0:
+                result_dict["val_loss_contrast"] = torch.stack(
+                    self.losses["val_contrast"]
+                ).mean()
+
+            if len(self.losses["test_contrast"]) > 0:
+                result_dict["test_loss_contrast"] = torch.stack(
+                    self.losses["test_contrast"]
+                ).mean()
+
+            # if reconstruct is present, also log it
+            if len(self.losses["train_reconstruct"]) > 0:
+                result_dict["train_loss_reconstruct"] = torch.stack(
+                    self.losses["train_reconstruct"]
+                ).mean()
+
+            if len(self.losses["val_reconstruct"]) > 0:
+                result_dict["val_loss_reconstruct"] = torch.stack(
+                    self.losses["val_reconstruct"]
+                ).mean()
+
+            if len(self.losses["test_reconstruct"]) > 0:
+                result_dict["test_loss_reconstruct"] = torch.stack(
+                    self.losses["test_reconstruct"]
+                ).mean()
+
             self.log_dict(result_dict, sync_dist=True)
         self._reset_losses_dict()
 
@@ -365,8 +399,19 @@ class LNNP(LightningModule):
 
             for pg in optimizer.param_groups:
                 pg["lr"] = lr_scale * self.hparams.optimizer.keywords['lr']
+        elif self.hparams.net.reduce_lr_when_bad:
+            if self.val_loss is not None and optimizer.param_groups[0]["lr"] > self.hparams.optimizer.keywords['lr'] * 0.1:
+                lr_scale = self.lr_gen_scheduler.step(self.val_loss.item())
+                self.val_loss = None
+            else:
+                lr_scale = 1.0
+
+            for pg in optimizer.param_groups:
+                pg["lr"] *= lr_scale
+        
         super().optimizer_step(*args, **kwargs)
         optimizer.zero_grad()
+
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """Choose what optimizers and learning-rate schedulers to use in your optimization.
@@ -427,10 +472,30 @@ class LNNP(LightningModule):
             "train_pos": [],
             "val_pos": [],
             "test_pos": [],
+            "train_contrast": [],
+            "val_contrast": [],
+            "test_contrast": [],
+            "train_reconstruct": [],
+            "val_reconstruct": [],
+            "test_reconstruct": [],
         }
 
     def _reset_ema_dict(self):
         self.ema = {"train_y": None, "val_y": None, "train_dy": None, "val_dy": None}
+
+    def ctr_loss_fn(self, molecule_feature, sp_feature, temperature=0.07):
+        from torch.nn import functional as F
+
+        # Calculate cosine similarity
+        cos_sim = F.cosine_similarity(molecule_feature[:, None, :], sp_feature[None, :, :], dim=-1)
+
+        postive_mask = torch.eye(cos_sim.shape[0], dtype=torch.bool, device=cos_sim.device)
+        # InfoNCE loss
+        cos_sim = cos_sim / temperature
+        nll = -cos_sim[postive_mask] + torch.logsumexp(cos_sim, dim=-1)
+        nll = nll.mean()
+
+        return nll
 
 
 if __name__ == "__main__":
