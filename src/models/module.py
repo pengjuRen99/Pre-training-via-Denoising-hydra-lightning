@@ -117,10 +117,10 @@ class LNNP(LightningModule):
             patience=self.hparams.lr_patience,
         )
 
-    def forward(self, z: torch.Tensor, pos: torch.Tensor, batch=None) -> torch.Tensor:
+    def forward(self, z: torch.Tensor, pos: torch.Tensor, spec: torch.Tensor, batch=None) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
         """
-        return self.model(z, pos, batch=batch)
+        return self.model(z, pos, spec, batch=batch)
 
     def on_train_start(self) -> None:
         """Lightning hook that is called when training begins."""
@@ -143,11 +143,23 @@ class LNNP(LightningModule):
         with torch.set_grad_enabled(stage == "train" or self.hparams.net.derivative):
             # TODO: the model doesn't necessarily need to return a derivative once
             # Union typing works under TorchScript (https://github.com/pytorch/pytorch/pull/53180)
-            pred, noise_pred, deriv = self(batch.z, batch.pos, batch.batch)
+            if ("uv" in batch) and ("ir" in batch) and ("raman" in batch): 
+                pred, noise_pred, deriv, sp_feature, molecule_feature, loss_reconstruct = self(batch.z, batch.pos, [batch.uv, batch.ir, batch.raman], batch.batch)
+            elif ("ir" in batch) and ("h_nmr" in batch) and ("c_nmr" in batch):
+                pred, noise_pred, deriv, sp_feature, molecule_feature, loss_reconstruct = self(batch.z, batch.pos, [batch.ir, batch.h_nmr, batch.c_nmr], batch.batch)
+            else:
+                pred, noise_pred, deriv, sp_feature, molecule_feature, loss_reconstruct = self(batch.z, batch.pos, None, batch.batch)
+
+        if loss_reconstruct is not None and self.hparams.extras.reconstruct_weight > 0:
+            self.losses[stage + "_reconstruct"].append(loss_reconstruct.detach())
+        else:
+            loss_reconstruct = 0
 
         denoising_is_on = ("pos_target" in batch) and (self.hparams.extras.denoising_weight > 0) and (noise_pred is not None)
+        contrastive_is_on = ("uv" in batch) and (self.hparams.extras.contrastive_weight > 0) and (sp_feature is not None)
 
         loss_y, loss_dy, loss_pos = 0, 0, 0
+        loss_ctr = 0
         if self.hparams.net.derivative:
             if "y" not in batch:
                 # "use" both outputs of the model's forward function but discard the first
@@ -205,9 +217,17 @@ class LNNP(LightningModule):
             loss_pos = loss_fn(noise_pred, normalized_pos_target)
             self.losses[stage + "_pos"].append(loss_pos.detach())
 
-        # total loss
-        loss = loss_y * self.hparams.extras.energy_weight + loss_dy * self.hparams.extras.force_weight + loss_pos * self.hparams.extras.denoising_weight
+        # contrastive loss
+        if contrastive_is_on:
+            loss_ctr = self.ctr_loss_fn(molecule_feature, sp_feature)
+            self.losses[stage + "_contrast"].append(loss_ctr.detach())
 
+        # total loss
+        loss = loss_y * self.hparams.extras.energy_weight\
+                + loss_dy * self.hparams.extras.force_weight\
+                + loss_pos * self.hparams.extras.denoising_weight\
+                + loss_ctr * self.hparams.extras.contrastive_weight\
+                + loss_reconstruct * self.hparams.extras.reconstruct_weight
         self.losses[stage].append(loss.detach())
 
         # Frequent per-batch logging for training
