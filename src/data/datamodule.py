@@ -144,6 +144,10 @@ class DataModule(LightningDataModule):
                     noise = torch.randn_like(data.pos) * self.hparams.position_noise_scale
                     data.pos_target = noise
                     data.pos = data.pos + noise
+                    if self.hparams.dataset_name == "QM9SP":
+                        data.uv = torch.Tensor(data.uv)
+                        data.ir = torch.Tensor(data.ir)
+                        data.raman = torch.Tensor(data.raman)
                     return data
             else:
                 transform = None
@@ -284,7 +288,7 @@ class DataModule(LightningDataModule):
         # compute mean and standard deviation
         self._mean = ys.mean(dim=0)
         self._std = ys.std(dim=0)
-    
+        print(f"y mean: {self.mean}; y std: {self.std}")
 
 
     def teardown(self, stage: Optional[str] = None) -> None:
