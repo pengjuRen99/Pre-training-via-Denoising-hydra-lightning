@@ -3,10 +3,42 @@ from typing import Any, Dict, Tuple
 import torch
 from lightning import LightningModule
 from torch.nn.functional import mse_loss, l1_loss
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from src.models.components.priors import BasePrior
 from src.models.components.model import create_model, load_model
+
+
+class PlateauScheduler(ReduceLROnPlateau):
+    def __init__(self, factor, patience):
+        # from torch._six import inf
+
+        self.factor = factor
+        self.patience = patience
+        self.threshold = 1e-4
+        self.mode = "min"
+        self.threshold_mode = "rel"
+        self.best = float("Inf")
+        self.num_bad_epochs = None
+        self.eps = 1e-8
+        self.last_epoch = 0
+
+    def step(self, metrics, epoch=None):
+        current = float(metrics)
+        self.last_epoch += 1
+
+        if self.is_better(current, self.best):
+            self.best = current
+            self.num_bad_epochs = 0
+        else:
+            self.num_bad_epochs += 1
+
+        if self.num_bad_epochs > self.patience:
+            self.num_bad_epochs = 0
+            return self.factor
+
+        return 1.0
+
 
 
 class LNNP(LightningModule):
@@ -78,12 +110,15 @@ class LNNP(LightningModule):
         # initialize loss collection
         self.losses = None
         self._reset_losses_dict()
+        # initialize orther lr_scheduler
+        self.last_epoch = 0
+        self.lr_gen_scheduler = PlateauScheduler(
+            factor=self.hparams.lr_factor,
+            patience=self.hparams.lr_patience,
+        )
 
     def forward(self, z: torch.Tensor, pos: torch.Tensor, batch=None) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
-
-        :param x: A tensor of images.
-        :return: A tensor of logits.
         """
         return self.model(z, pos, batch=batch)
 
@@ -335,8 +370,17 @@ class LNNP(LightningModule):
                         "frequency": 1,
                     },
                 }
-            
+            elif isinstance(scheduler, torch.optim.lr_scheduler.CosineAnnealingWarmRestarts):
+                return{
+                    "optimizer": optimizer,
+                    "lr_scheduler": {
+                        "scheduler": scheduler,
+                        "interval": "step",
+                        "frequency": 1,
+                    },
+                }
             # Fallback for other schedulers, assuming they are step-based.
+            # lr_schedule=cosine
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
