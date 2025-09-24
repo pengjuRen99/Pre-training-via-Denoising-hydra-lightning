@@ -113,8 +113,8 @@ class LNNP(LightningModule):
         # initialize orther lr_scheduler
         self.last_epoch = 0
         self.lr_gen_scheduler = PlateauScheduler(
-            factor=self.hparams.lr_factor,
-            patience=self.hparams.lr_patience,
+            factor=self.hparams.net.lr_factor,
+            patience=self.hparams.net.lr_patience,
         )
         self.val_loss = None
 
