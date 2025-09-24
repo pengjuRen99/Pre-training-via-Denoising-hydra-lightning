@@ -207,14 +207,14 @@ class Distance(nn.Module):
         self.loop = loop
 
     def forward(self, pos, batch):
-        edge_index = radius_graph(
+        edge_index = radius_graph(      # 构建边
             pos,
             r=self.cutoff_upper,
             batch=batch,
             loop=self.loop,
             max_num_neighbors=self.max_num_neighbors,
         )
-        edge_vec = pos[edge_index[0]] - pos[edge_index[1]]
+        edge_vec = pos[edge_index[0]] - pos[edge_index[1]]      # 计算连接原子对的向量
 
         if self.loop:
             # mask out self loops when computing distances because
