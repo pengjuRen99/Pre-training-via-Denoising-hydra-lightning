@@ -66,6 +66,8 @@ net:
   output_model_noise: null    # The type of output model for denoising    VectorOutput
     # _target_: null
 
+  reduce_lr_when_bad: false
+  use_dataset_md17: true
 
 # compile model for faster training with pytorch 2.0
 compile: false
