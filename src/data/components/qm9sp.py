@@ -100,7 +100,8 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
                     )
                     data_list.append(data)
                     break
-        self.save(data_list, self.processed_paths)
+
+        self.save(data_list, self.processed_paths[0])
 
 
 if __name__ == "__main__":
