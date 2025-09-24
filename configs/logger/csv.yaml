@@ -3,5 +3,5 @@
 csv:
   _target_: lightning.pytorch.loggers.csv_logs.CSVLogger
   save_dir: "${paths.output_dir}/csv/"
-  name: "eval QM9-homo"
+  name: "qm9-pcqm4mv2-PT"
   prefix: ""
