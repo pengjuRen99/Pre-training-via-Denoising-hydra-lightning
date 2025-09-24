@@ -1,4 +1,4 @@
-_target_: src.data.datamodule.DataModule
+_target_: src.data.datamodule.DataModule      # 在qm9sp和md17均是此配置
 data_dir: ${paths.data_dir}/PCQM4MV2
 dataset_name: PCQM4MV2
 
