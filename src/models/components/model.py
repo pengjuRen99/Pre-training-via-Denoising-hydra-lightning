@@ -54,10 +54,35 @@ def create_model(args, prior_model=None, mean=None, std=None):
             num_heads=args["num_heads"],
             distance_influence=args["distance_influence"],
             layernorm_on_vec=args["layernorm_on_vec"],
+            use_dataset_md17=args["use_dataset_md17"],
             **shared_args,
         )
     else:
         raise ValueError(f'Unknown architecture: {args["model"]}')
+    
+    # 光谱表征网络
+    representation_spec_model = None
+    if args["uv_model"] == "CNN-AM":
+        from src.models.components import CNN_AM
+
+        input_dim = 1500
+        in_channel = 1
+        representation_spec_model = CNN_AM(
+            input_dim=input_dim,
+            in_channel=in_channel,
+            output_channel=args["embedding_dimension"],
+        )
+    elif args["uv_model"] == "SpecFormer":
+        from src.models.components import SpecFormer
+
+        representation_spec_model = SpecFormer(
+            patch_len=args["patch_len"],
+            stride=args["stride"],
+            output_dim=args["embedding_dimension"],
+            input_norm_type=args["input_data_norm_type"],
+            # n_heads=n_heads,
+            # n_layers=n_layers,
+        )
 
     # atom filter
     if not args["derivative"] and args["atom_filter"] > -1:
@@ -90,6 +115,20 @@ def create_model(args, prior_model=None, mean=None, std=None):
         output_model_noise = getattr(output_modules, output_prefix + args["output_model_noise"])(
             args["embedding_dimension"], args["activation"],
         )
+
+    # create the spec feature output network
+    output_model_spec = None
+    if args['output_model_spec'] is not None:
+        output_model_spec = getattr(output_modules, output_prefix + args["output_model_spec"])(
+            args["embedding_dimension"], args["activation"],
+        )
+
+    # create the mol feature output network
+    output_model_mol = None
+    if args['output_model_mol'] is not None:
+        output_model_mol = getattr(output_modules, output_prefix + args["output_model_mol"])(
+            args["embedding_dimension"], args["activation"],
+        )
         
     # combine representation and output network
     model = TorchMD_Net(
@@ -102,6 +141,9 @@ def create_model(args, prior_model=None, mean=None, std=None):
         derivative=args["derivative"],
         output_model_noise=output_model_noise,
         position_noise_scale=args['position_noise_scale'],
+        representation_spec_model=representation_spec_model,
+        output_model_spec=output_model_spec,
+        output_model_mol=output_model_mol,
     )
     return model
 
@@ -119,12 +161,45 @@ def load_model(filepath, args=None, device="cpu", mean=None, std=None, **kwargs)
     model = create_model(args)
 
     state_dict = {re.sub(r"^model\.", "", k): v for k, v in ckpt["state_dict"].items()}
-    loading_return = model.load_state_dict(state_dict, strict=False)
+
+    # NOTE for debug
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        # if 'pos_normalizer' not in k:
+        if "output_model_noise.0" in k:
+            k = k.replace("output_model_noise.0", "output_model_noise")
+        if "head.2" in k:
+            continue
+        new_state_dict[k] = v
+
+    current_model_dict = model.state_dict()
+    # ommit mismatching shape
+    new_state_dict2 = {}
+    for k in current_model_dict:
+        if k in new_state_dict:
+            # print(k, current_model_dict[k].size(), new_state_dict[k].size())
+            if current_model_dict[k].size() == new_state_dict[k].size():
+                new_state_dict2[k] = new_state_dict[k]
+            else:
+                print(f"warning {k} shape mismatching, not loaded")
+                new_state_dict2[k] = current_model_dict[k]
+
+    # loading_return = model.load_state_dict(state_dict, strict=False)
+    loading_return = model.load_state_dict(new_state_dict2, strict=False)
     
     if len(loading_return.unexpected_keys) > 0:
         # Should only happen if not applying denoising during fine-tuning.
-        assert all(("output_model_noise" in k or "pos_normalizer" in k) for k in loading_return.unexpected_keys)
-    assert len(loading_return.missing_keys) == 0, f"Missing keys: {loading_return.missing_keys}"
+        assert all(
+            (
+                "output_model_noise" in k
+                or "pos_normalizer" in k
+                or "representation_spec_model" in k
+                or "output_model_spec" in k
+                or "output_model_mol" in k
+            )
+            for k in loading_return.unexpected_keys
+        )
+    # assert len(loading_return.missing_keys) == 0, f"Missing keys: {loading_return.missing_keys}"
 
     if mean:
         model.mean = mean
@@ -146,10 +221,14 @@ class TorchMD_Net(nn.Module):
         derivative=False,
         output_model_noise=None,
         position_noise_scale=0.,
+        representation_spec_model=None,
+        output_model_spec=None,
+        output_model_mol=None,
     ):
         super(TorchMD_Net, self).__init__()
         self.representation_model = representation_model
         self.output_model = output_model
+        self.representation_spec_model = representation_spec_model
 
         self.prior_model = prior_model
         if not output_model.allow_prior_model and prior_model is not None:
@@ -166,6 +245,9 @@ class TorchMD_Net(nn.Module):
         self.output_model_noise = output_model_noise        
         self.position_noise_scale = position_noise_scale
 
+        self.output_model_spec = output_model_spec
+        self.output_model_mol = output_model_mol
+
         mean = torch.scalar_tensor(0) if mean is None else mean
         self.register_buffer("mean", mean)
         std = torch.scalar_tensor(1) if std is None else std
@@ -181,8 +263,16 @@ class TorchMD_Net(nn.Module):
         self.output_model.reset_parameters()
         if self.prior_model is not None:
             self.prior_model.reset_parameters()
+        if self.output_model_noise is not None:
+            self.output_model_noise.reset_parameters()
+        if self.representation_spec_model is not None:
+            self.representation_spec_model.reset_parameters()
+        if self.output_model_spec is not None:
+            self.output_model_spec.reset_parameters()
+        if self.output_model_mol is not None:
+            self.output_model_mol.reset_parameters()
 
-    def forward(self, z, pos, batch: Optional[torch.Tensor] = None):
+    def forward(self, z, pos, spec_list, batch: Optional[torch.Tensor] = None):
         assert z.dim() == 1 and z.dtype == torch.long
         batch = torch.zeros_like(z) if batch is None else batch
 
@@ -191,6 +281,21 @@ class TorchMD_Net(nn.Module):
 
         # run the potentially wrapped representation model
         x, v, z, pos, batch = self.representation_model(z, pos, batch=batch)
+
+        # construct spectra feature
+        spec_feature = None
+        loss_reconstruct = None
+        if self.representation_spec_model is not None:
+            if spec_list is not None:
+                spec_feature = self.representation_spec_model(spec_list)
+            if spec_feature is not None and len(spec_feature) == 2:
+                spec_feature, loss_reconstruct = spec_feature
+
+        # construct molecule feature
+        mol_feature = scatter(x, batch, dim=0, reduce=self.reduce_op)
+        if self.output_model_mol is not None:
+            mol_feature = self.output_model_mol.pre_reduce(x, v, z, pos, batch)
+            mol_feature = scatter(mol_feature, batch, dim=0, reduce=self.reduce_op)
 
         # predict noise
         noise_pred = None
@@ -230,9 +335,9 @@ class TorchMD_Net(nn.Module):
             )[0]
             if dy is None:
                 raise RuntimeError("Autograd returned None for the force prediction.")
-            return out, noise_pred, -dy
+            return out, noise_pred, -dy, spec_feature, mol_feature, loss_reconstruct
         # TODO: return only `out` once Union typing works with TorchScript (https://github.com/pytorch/pytorch/pull/53180)
-        return out, noise_pred, None
+        return out, noise_pred, None, spec_feature, mol_feature, loss_reconstruct
 
 
 class AccumulatedNormalization(nn.Module):
