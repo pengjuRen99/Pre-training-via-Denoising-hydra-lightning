@@ -144,13 +144,13 @@ class TorchMD_GN(nn.Module):
     def forward(self, z, pos, batch):
         x = self.embedding(z)
 
-        edge_index, edge_weight, _ = self.distance(pos, batch)
-        edge_attr = self.distance_expansion(edge_weight)
+        edge_index, edge_weight, _ = self.distance(pos, batch)      # 通过截断距离，计算连接关系和原子间的距离权重，构建分子图
+        edge_attr = self.distance_expansion(edge_weight)            # 将原子距离转换为高维特征向量
 
-        if self.neighbor_embedding is not None:
+        if self.neighbor_embedding is not None:     # 对初始原子embedding进行初步邻居增强，不仅考虑自身原子类型，还结合邻居种类和距离信息
             x = self.neighbor_embedding(z, x, edge_index, edge_weight, edge_attr)
 
-        for interaction in self.interactions:
+        for interaction in self.interactions:       # 对CFConv进行封装，计算邻居原子j应该向中心原子i传递什么消息
             x = x + interaction(x, edge_index, edge_weight, edge_attr)
 
         return x, None, z, pos, batch
@@ -245,11 +245,11 @@ class CFConv(MessagePassing):
 
     def forward(self, x, edge_index, edge_weight, edge_attr):
         C = self.cutoff(edge_weight)
-        W = self.net(edge_attr) * C.view(-1, 1)
+        W = self.net(edge_attr) * C.view(-1, 1)     # W是连续滤波，由RBF特征edge_attr通过MLP动态生成，消息权重根据原子间距离连续变化
 
         x = self.lin1(x)
         # propagate_type: (x: Tensor, W: Tensor)
-        x = self.propagate(edge_index, x=x, W=W, size=None)
+        x = self.propagate(edge_index, x=x, W=W, size=None)     # 调用message函数，根据原子间距离连续变化
         x = self.lin2(x)
         return x
 

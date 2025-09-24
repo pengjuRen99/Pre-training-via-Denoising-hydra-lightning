@@ -69,6 +69,8 @@ class TorchMD_ET(nn.Module):
         max_z=100,
         max_num_neighbors=32,
         layernorm_on_vec=None,
+        use_dataset_md17=False,
+        # use_dataset_md17=True,
     ):
         super(TorchMD_ET, self).__init__()
 
@@ -101,6 +103,10 @@ class TorchMD_ET(nn.Module):
         self.max_z = max_z
         self.layernorm_on_vec = layernorm_on_vec
 
+        self.use_dataset_md17 = use_dataset_md17
+        if self.use_dataset_md17:
+            print("use md17 dataset, model setting is changing.")
+
         act_class = act_class_mapping[activation]
 
         self.embedding = nn.Embedding(self.max_z, hidden_channels)
@@ -124,6 +130,9 @@ class TorchMD_ET(nn.Module):
         )
 
         self.attention_layers = nn.ModuleList()
+        if not self.use_dataset_md17:
+            self.x_norms = nn.ModuleList()
+            self.vec_norms = nn.ModuleList()
         for _ in range(num_layers):
             layer = EquivariantMultiHeadAttention(
                 hidden_channels,
@@ -134,8 +143,11 @@ class TorchMD_ET(nn.Module):
                 attn_activation,
                 cutoff_lower,
                 cutoff_upper,
-            )
+            ).jittable()
             self.attention_layers.append(layer)
+            if not self.use_dataset_md17:
+                self.x_norms.append(nn.LayerNorm(hidden_channels))
+                self.vec_norms.append(EquivariantLayerNorm(hidden_channels))
 
         self.out_norm = nn.LayerNorm(hidden_channels)
         if self.layernorm_on_vec:
@@ -151,8 +163,11 @@ class TorchMD_ET(nn.Module):
         self.distance_expansion.reset_parameters()
         if self.neighbor_embedding is not None:
             self.neighbor_embedding.reset_parameters()
-        for attn in self.attention_layers:
-            attn.reset_parameters()
+        for layer_idx in range(len(self.attention_layers)):
+            self.attention_layers[layer_idx].reset_parameters()
+            if not self.use_dataset_md17:
+                self.x_norms[layer_idx].reset_parameters()
+                self.vec_norms[layer_idx].reset_parameters()
         self.out_norm.reset_parameters()
         if self.layernorm_on_vec:
             self.out_norm_vec.reset_parameters()
@@ -174,15 +189,22 @@ class TorchMD_ET(nn.Module):
 
         vec = torch.zeros(x.size(0), 3, x.size(1), device=x.device)
 
-        for attn in self.attention_layers:
+        for layer_idx, attn in enumerate(self.attention_layers):
             dx, dvec = attn(x, vec, edge_index, edge_weight, edge_attr, edge_vec)
-            x = x + dx
+            x = x + dx  # may be nan
             vec = vec + dvec
-        x = self.out_norm(x)
+            if not self.use_dataset_md17:
+                x = self.x_norms[layer_idx](x)
+                vec = self.vec_norms[layer_idx](vec)
+
+        if torch.max(x) > 1e15:
+            print(f'x is tooooo large: {torch.max(x)}')
+
+        xnew = self.out_norm(x)
         if self.layernorm_on_vec:
             vec = self.out_norm_vec(vec)
 
-        return x, vec, z, pos, batch
+        return xnew, vec, z, pos, batch
 
     def __repr__(self):
         return (
