@@ -94,9 +94,9 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
                         z=data_qm9sp[i].z,
                         name=data_list_qm9[j]['name'],
                         idx=data_list_qm9[j]['idx'],
-                        uv=UV_spectra.iloc[i+1].values,
-                        ir=IR_spectra.iloc[i+1].values,
-                        raman=Raman_spectra.iloc[i+1].values,
+                        uv=UV_spectra.iloc[i].values[1:],
+                        ir=IR_spectra.iloc[i].values[1:],
+                        raman=Raman_spectra.iloc[i].values[1:],
                     )
                     data_list.append(data)
                     break
