@@ -66,6 +66,8 @@ net:
   output_model_noise: VectorOutput    # The type of output model for denoising    VectorOutput
     # _target_: null
   reduce_lr_when_bad: false
+  lr_factor: 0.8
+  lr_patience: 15
   use_dataset_md17: false
 
   uv_model: null # SpecFormer
