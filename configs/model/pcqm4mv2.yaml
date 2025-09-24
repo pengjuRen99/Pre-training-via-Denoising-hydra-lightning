@@ -31,9 +31,9 @@ net:
   # _target_: src.models.components.simple_dense_net.SimpleDenseNet   # equivariant-transformer
   # architectural args
   model: equivariant-transformer          # choices=["graph-network", "transformer", "equivariant-transformer"]
-  embedding_dimension: 256                # Embedding dimension
-  num_layers: 8                           # Number of interaction layers in the model
-  num_rbf: 64                             # Number of radial basis functions in model
+  embedding_dimension: 256                # Embedding dimension     # md17: 128
+  num_layers: 8                           # Number of interaction layers in the model   # md17: 6
+  num_rbf: 64                             # Number of radial basis functions in model   # md17: 32
   activation: silu                        # Activation function, choices=list(act_class_mapping.keys())
   rbf_type: expnorm                       # Type of distance expansion, choices=list(rbf_class_mapping.keys())
   trainable_rbf: false                    # If distance expansion functions should be trainable
