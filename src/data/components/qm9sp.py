@@ -39,9 +39,8 @@ class QM9SP(QM9_geometric):     # 三类光谱，需要一个list，[uv, ir, ram
 
     @property
     def processed_file_names(self) -> str:
-        # return "data_with_uv_ir_raman.pt"
+        return "data_with_uv_ir_raman.pt"
         # return "data_with_uv_ir_raman_offical.pt"
-        return "data_with_uv_ir_raman_collate.pt"
 
     def get_atomref(self, max_z=100):
         atomref = self.atomref(self.label_idx)
