@@ -143,7 +143,7 @@ class TorchMD_ET(nn.Module):
                 attn_activation,
                 cutoff_lower,
                 cutoff_upper,
-            ).jittable()
+            )
             self.attention_layers.append(layer)
             if not self.use_dataset_md17:
                 self.x_norms.append(nn.LayerNorm(hidden_channels))
