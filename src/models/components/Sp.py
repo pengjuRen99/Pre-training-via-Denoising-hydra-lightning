@@ -238,7 +238,7 @@ class SpecFormer(nn.Module):
         masks = []
         for i, spec in enumerate(spectra):
             
-            # spec = spec.reshape(-1, self.list_len_spectrum[i])
+            spec = spec.reshape(-1, self.list_len_spectrum[i])
 
             if self.input_norm_type == 'minmax':
                 spec = (spec - self.spectra_min_vals[i] + self.norm_eps) / (self.spectra_max_vals[i] - self.spectra_min_vals[i] + self.norm_eps)
