@@ -228,7 +228,7 @@ class LNNP(LightningModule):
                 + loss_dy * self.hparams.extras.force_weight\
                 + loss_pos * self.hparams.extras.denoising_weight\
                 + loss_ctr * self.hparams.extras.contrastive_weight\
-                + loss_reconstruct * self.hparams.extras.reconstruct_weight
+                + loss_reconstruct * self.hparams.extras.reconstruct_weight     # 前两项（能量和力）有监督，后三项无监督
         self.losses[stage].append(loss.detach())
 
         # Frequent per-batch logging for training
