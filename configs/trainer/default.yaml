@@ -3,7 +3,7 @@ _target_: lightning.pytorch.trainer.Trainer
 default_root_dir: ${paths.output_dir}
 
 min_epochs: 1 # prevents early stopping
-max_epochs: 3000      # --num-epochs                      # pcqm4mv2: 30, ANI1: 3000, MD17: 3000, QM9: 3000, 3000
+max_epochs: 30      # --num-epochs                      # pcqm4mv2: 30, ANI1: 3000, MD17: 3000, QM9: 3000, 3000
 max_steps: 400000  # --num-steps, -1 means no limit     # pcqm4mv2: 400000, ANI1: null, MD17: null, QM9: 400000, 400000
 
 accelerator: gpu

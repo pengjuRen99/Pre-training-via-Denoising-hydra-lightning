@@ -79,7 +79,6 @@ net:
   # SpecFormer [uv, ir, raman]
   patch_len: [20,50,50]
   stride: [10,25,25]
-  reconstruct_weight: 0.0
   mask_ratios: [0.1,0.1,0.1]
 
 
