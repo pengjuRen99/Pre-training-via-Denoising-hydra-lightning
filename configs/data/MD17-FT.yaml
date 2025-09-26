@@ -1,0 +1,25 @@
+_target_: src.data.datamodule.DataModule
+data_dir: ${paths.data_dir}/MD17
+dataset_name: MD17
+
+batch_size: 8 # Needs to be divisible by the number of devices (e.g., if in a distributed setup)
+inference_batch_size: 64   # Batch size for inference, e.g., validation and testing
+
+splits: null  # Optionally provide your own train/val/test splits as list of indices. If None, use standard splits
+train_val_test_split: [950, 50, null]      # 10_000
+
+num_workers: 20
+pin_memory: true
+
+data_arg: aspirin                # Additional dataset argument, e.g. target property for QM9 or molecule for MD17
+coord_files: null             # Custom coordinate files glob
+embed_files: null             # Custom embedding files glob
+energy_files: null            # Custom energy files glob
+force_files: null             # Custom force files glob
+energy_weight: 0.2            # Weighting factor for energies in the loss function
+force_weight: 0.8             # Weighting factor for forces in the loss function
+position_noise_scale: 0.005    # Scale of Gaussian noise added to positions.
+denoising_weight: 0.1         # Weighting factor for denoising in the loss function.
+denoising_only: False          # If the task is denoising only (then val/test datasets also contain noise).
+standardize: True            # If true, multiply prediction by dataset std and add mean
+prior_model: null       # Which prior model to use      et. Atomref

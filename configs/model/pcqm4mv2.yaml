@@ -74,7 +74,6 @@ net:
 
   uv_model: null # SpecFormer
   input_data_norm_type: minmax
-  contrastive_weight: 0.0
   output_model_spec: null
   output_model_mol: null
   # SpecFormer [uv, ir, raman]
