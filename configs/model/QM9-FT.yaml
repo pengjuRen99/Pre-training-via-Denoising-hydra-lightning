@@ -65,7 +65,7 @@ net:
   position_noise_scale: 0.005              # Scale of Gaussian noise added to positions. 
 
   load_model: null                     # Path to model checkpoint to load before training
-  pretrained_model: experiments/pretrain-MultiSpec-con_recon-SpecFormer-log10-no_lr_reduce-offical/last.ckpt                      # If true, load a pretrained model from torchmd-net
+  pretrained_model: logs/train/runs/2025-09-25_17-08-10/checkpoints/last.ckpt                      # If true, load a pretrained model from torchmd-net
 
   prior_model: null       # Which prior model to use      et. Atomref
   # _target_: src.models.components.priors.Atomref
@@ -79,8 +79,8 @@ net:
   lr_factor: 0.8
   lr_patience: 15
 
-  uv_model: SpecFormer # SpecFormer
-  input_data_norm_type: log10
+  uv_model: null # SpecFormer
+  input_data_norm_type: minmax
   output_model_spec: null
   output_model_mol: null
   # SpecFormer [uv, ir, raman]
