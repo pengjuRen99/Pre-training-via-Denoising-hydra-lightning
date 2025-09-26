@@ -7,6 +7,8 @@ extras:
   energy_weight: 1.0            # Weighting factor for energies in the loss function
   force_weight: 1.0             # Weighting factor for forces in the loss function
   denoising_weight: 0.1         # Weighting factor for denoising in the loss function.
+  contrastive_weight: 0.0       # 加入对比和重构损失
+  reconstruct_weight: 0.0
 
 optimizer:
   _target_: torch.optim.AdamW
@@ -22,10 +24,17 @@ optimizer:
 #   patience: 15         # Patience for lr-schedule. Patience per eval-interval of validation
 #   min_lr: 1e-7        # Minimum learning rate before early stopping
 
+# scheduler:
+#   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+#   _partial_: true
+#   T_max: 400000       # Cosine length if lr_schedule is cosine.
+
 scheduler:
-  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
   _partial_: true
-  T_max: 300000       # Cosine length if lr_schedule is cosine.
+  T_0: 100000       # Cosine length if lr_schedule is cosine.
+  T_mult: 2
+  eta_min: 1e-7
 
 net:
   # _target_: src.models.components.simple_dense_net.SimpleDenseNet   # equivariant-transformer
@@ -56,7 +65,7 @@ net:
   position_noise_scale: 0.005              # Scale of Gaussian noise added to positions. 
 
   load_model: null                     # Path to model checkpoint to load before training
-  pretrained_model: null                      # If true, load a pretrained model from torchmd-net
+  pretrained_model: experiments/pretrain-MultiSpec-con_recon-SpecFormer-log10-no_lr_reduce-offical/last.ckpt                      # If true, load a pretrained model from torchmd-net
 
   prior_model: null       # Which prior model to use      et. Atomref
   # _target_: src.models.components.priors.Atomref
@@ -65,6 +74,19 @@ net:
 
   output_model_noise: VectorOutput    # The type of output model for denoising    VectorOutput
     # _target_: null
+  reduce_lr_when_bad: false
+  use_dataset_md17: false
+  lr_factor: 0.8
+  lr_patience: 15
+
+  uv_model: SpecFormer # SpecFormer
+  input_data_norm_type: log10
+  output_model_spec: null
+  output_model_mol: null
+  # SpecFormer [uv, ir, raman]
+  patch_len: [20,50,50]
+  stride: [10,25,25]
+  mask_ratios: [0.1,0.1,0.1]
 
 
 # compile model for faster training with pytorch 2.0

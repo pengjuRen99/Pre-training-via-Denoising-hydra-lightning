@@ -1,0 +1,503 @@
+[[36m2025-09-25 17:08:10,359[0m][[34msrc.utils.utils[0m][[32mINFO[0m] - [rank: 0] Enforcing tags! <cfg.extras.enforce_tags=True>[0m
+[[36m2025-09-25 17:08:10,363[0m][[34msrc.utils.utils[0m][[32mINFO[0m] - [rank: 0] Printing config tree with Rich! <cfg.extras.print_config=True>[0m
+CONFIG
+├── data
+│   └── _target_: src.data.datamodule.DataModule                                
+│       data_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-trai
+│       dataset_name: QM9SP                                                     
+│       batch_size: 128                                                         
+│       inference_batch_size: 128                                               
+│       splits: null                                                            
+│       train_val_test_split:                                                   
+│       - 110000                                                                
+│       - 10000                                                                 
+│       - null                                                                  
+│       num_workers: 10                                                         
+│       pin_memory: true                                                        
+│       data_arg: homo                                                          
+│       coord_files: null                                                       
+│       embed_files: null                                                       
+│       energy_files: null                                                      
+│       force_files: null                                                       
+│       energy_weight: 0.0                                                      
+│       force_weight: 0.0                                                       
+│       position_noise_scale: 0.04                                              
+│       denoising_weight: 1.0                                                   
+│       denoising_only: true                                                    
+│       standardize: false                                                      
+│       prior_model: null                                                       
+│                                                                               
+├── model
+│   └── _target_: src.models.module.LNNP                                        
+│       extras:                                                                 
+│         lr_warmup_steps: 10000                                                
+│         ema_alpha_y: 1.0                                                      
+│         ema_aplha_dy: 1.0                                                     
+│         energy_weight: 0.0                                                    
+│         force_weight: 0.0                                                     
+│         denoising_weight: 1.0                                                 
+│         contrastive_weight: 1.0                                               
+│         reconstruct_weight: 1.0                                               
+│       optimizer:                                                              
+│         _target_: torch.optim.AdamW                                           
+│         _partial_: true                                                       
+│         lr: 0.0004                                                            
+│         weight_decay: 0.0                                                     
+│       scheduler:                                                              
+│         _target_: torch.optim.lr_scheduler.CosineAnnealingLR                  
+│         _partial_: true                                                       
+│         T_max: 400000                                                         
+│       net:                                                                    
+│         model: equivariant-transformer                                        
+│         embedding_dimension: 256                                              
+│         num_layers: 8                                                         
+│         num_rbf: 64                                                           
+│         activation: silu                                                      
+│         rbf_type: expnorm                                                     
+│         trainable_rbf: false                                                  
+│         neighbor_embedding: true                                              
+│         aggr: add                                                             
+│         distance_influence: both                                              
+│         attn_activation: silu                                                 
+│         num_heads: 8                                                          
+│         layernorm_on_vec: whitened                                            
+│         derivative: false                                                     
+│         cutoff_lower: 0.0                                                     
+│         cutoff_upper: 5.0                                                     
+│         atom_filter: -1                                                       
+│         max_z: 100                                                            
+│         max_num_neighbors: 32                                                 
+│         reduce_op: add                                                        
+│         position_noise_scale: 0.04                                            
+│         load_model: null                                                      
+│         pretrained_model: logs/train/runs/2025-09-24_22-03-23/checkpoints/step
+│         prior_model: null                                                     
+│         output_model: Scalar                                                  
+│         output_model_noise: VectorOutput                                      
+│         reduce_lr_when_bad: false                                             
+│         use_dataset_md17: false                                               
+│         lr_factor: 0.8                                                        
+│         lr_patience: 15                                                       
+│         uv_model: SpecFormer                                                  
+│         input_data_norm_type: log10                                           
+│         output_model_spec: null                                               
+│         output_model_mol: null                                                
+│         patch_len:                                                            
+│         - 20                                                                  
+│         - 50                                                                  
+│         - 50                                                                  
+│         stride:                                                               
+│         - 10                                                                  
+│         - 25                                                                  
+│         - 25                                                                  
+│         mask_ratios:                                                          
+│         - 0.1                                                                 
+│         - 0.1                                                                 
+│         - 0.1                                                                 
+│       compile: false                                                          
+│                                                                               
+├── callbacks
+│   └── model_checkpoint:                                                       
+│         _target_: lightning.pytorch.callbacks.ModelCheckpoint                 
+│         dirpath: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-tra
+│         filename: step={step}-epoch={epoch}-val_loss={val_loss:.4f}-test_loss=
+│         monitor: val_loss                                                     
+│         verbose: false                                                        
+│         save_last: true                                                       
+│         save_top_k: 10                                                        
+│         mode: min                                                             
+│         auto_insert_metric_name: false                                        
+│         save_weights_only: false                                              
+│         every_n_train_steps: null                                             
+│         train_time_interval: null                                             
+│         every_n_epochs: 1                                                     
+│         save_on_train_epoch_end: null                                         
+│       early_stopping:                                                         
+│         _target_: lightning.pytorch.callbacks.EarlyStopping                   
+│         monitor: val_loss                                                     
+│         min_delta: 0.0                                                        
+│         patience: 150                                                         
+│         verbose: false                                                        
+│         mode: min                                                             
+│         strict: true                                                          
+│         check_finite: true                                                    
+│         stopping_threshold: null                                              
+│         divergence_threshold: null                                            
+│         check_on_train_epoch_end: null                                        
+│       model_summary:                                                          
+│         _target_: lightning.pytorch.callbacks.RichModelSummary                
+│         max_depth: -1                                                         
+│       rich_progress_bar:                                                      
+│         _target_: lightning.pytorch.callbacks.RichProgressBar                 
+│                                                                               
+├── logger
+│   └── csv:                                                                    
+│         _target_: lightning.pytorch.loggers.csv_logs.CSVLogger                
+│         save_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-tr
+│         name: QM9SP-PT                                                        
+│         prefix: ''                                                            
+│       tensorboard:                                                            
+│         _target_: lightning.pytorch.loggers.tensorboard.TensorBoardLogger     
+│         save_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-tr
+│         name: QM9SP-PT                                                        
+│         log_graph: false                                                      
+│         default_hp_metric: true                                               
+│         prefix: ''                                                            
+│       wandb:                                                                  
+│         _target_: lightning.pytorch.loggers.wandb.WandbLogger                 
+│         save_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-tr
+│         offline: false                                                        
+│         id: null                                                              
+│         anonymous: null                                                       
+│         project: QM9SP-PT                                                     
+│         log_model: false                                                      
+│         prefix: ''                                                            
+│         group: ''                                                             
+│         tags: []                                                              
+│         job_type: ''                                                          
+│                                                                               
+├── trainer
+│   └── _target_: lightning.pytorch.trainer.Trainer                             
+│       default_root_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/
+│       min_epochs: 1                                                           
+│       max_epochs: 3000                                                        
+│       max_steps: 400000                                                       
+│       accelerator: gpu                                                        
+│       devices: 1                                                              
+│       precision: 32                                                           
+│       check_val_every_n_epoch: 1                                              
+│       deterministic: false                                                    
+│                                                                               
+├── paths
+│   └── root_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-trai
+│       data_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-trai
+│       log_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-train
+│       output_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-tr
+│       work_dir: /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-trai
+│                                                                               
+├── extras
+│   └── ignore_warnings: false                                                  
+│       enforce_tags: true                                                      
+│       print_config: true                                                      
+│                                                                               
+├── task_name
+│   └── train                                                                   
+├── tags
+│   └── ['QM9SP-PT']                                                            
+├── train
+│   └── True                                                                    
+├── test
+│   └── True                                                                    
+├── ckpt_path
+│   └── None                                                                    
+└── seed
+    └── 1                                                                       
+Seed set to 1
+[[36m2025-09-25 17:08:10,407[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Instantiating datamodule <src.data.datamodule.DataModule>[0m
+train 110000, val 10000, test 8140
+[[36m2025-09-25 17:08:13,271[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Instantiating model <src.models.module.LNNP>[0m
+[[36m2025-09-25 17:08:13,624[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Instantiating callbacks...[0m
+[[36m2025-09-25 17:08:13,624[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating callback <lightning.pytorch.callbacks.ModelCheckpoint>[0m
+[[36m2025-09-25 17:08:13,627[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating callback <lightning.pytorch.callbacks.EarlyStopping>[0m
+[[36m2025-09-25 17:08:13,627[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating callback <lightning.pytorch.callbacks.RichModelSummary>[0m
+[[36m2025-09-25 17:08:13,628[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating callback <lightning.pytorch.callbacks.RichProgressBar>[0m
+[[36m2025-09-25 17:08:13,628[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Instantiating loggers...[0m
+[[36m2025-09-25 17:08:13,628[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating logger <lightning.pytorch.loggers.csv_logs.CSVLogger>[0m
+[[36m2025-09-25 17:08:13,629[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating logger <lightning.pytorch.loggers.tensorboard.TensorBoardLogger>[0m
+[[36m2025-09-25 17:08:13,631[0m][[34msrc.utils.instantiators[0m][[32mINFO[0m] - [rank: 0] Instantiating logger <lightning.pytorch.loggers.wandb.WandbLogger>[0m
+[[36m2025-09-25 17:08:13,633[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Instantiating trainer <lightning.pytorch.trainer.Trainer>[0m
+[[36m2025-09-25 17:08:13,671[0m][[34mpytorch_lightning.utilities.rank_zero[0m][[32mINFO[0m] - Trainer already configured with model summary callbacks: [<class 'lightning.pytorch.callbacks.rich_model_summary.RichModelSummary'>]. Skipping setting a default `ModelSummary` callback.[0m
+[[36m2025-09-25 17:08:13,676[0m][[34mpytorch_lightning.utilities.rank_zero[0m][[32mINFO[0m] - GPU available: True (cuda), used: True[0m
+[[36m2025-09-25 17:08:13,676[0m][[34mpytorch_lightning.utilities.rank_zero[0m][[32mINFO[0m] - TPU available: False, using: 0 TPU cores[0m
+[[36m2025-09-25 17:08:13,676[0m][[34mpytorch_lightning.utilities.rank_zero[0m][[32mINFO[0m] - HPU available: False, using: 0 HPUs[0m
+[[36m2025-09-25 17:08:13,676[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Logging hyperparameters![0m
+/home/RenPengju/.local/share/mamba/envs/AllAtomDiff/lib/python3.10/site-packages/requests/__init__.py:86: RequestsDependencyWarning: Unable to find acceptable character detection dependency (chardet or charset_normalizer).
+  warnings.warn(
+wandb: Currently logged in as: pengjuren99 to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+wandb: creating run
+wandb: Tracking run with wandb version 0.21.2
+wandb: Run data is saved locally in /home/RenPengju/code/MultiModal_Spectra/Pretrain_task/Pre-training-via-Denoising-hydra-lightning/logs/train/runs/2025-09-25_17-08-10/wandb/run-20250925_170815-ua5jfan1
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run ancient-plasma-1
+wandb: ⭐️ View project at https://wandb.ai/pengjuren99/QM9SP-PT
+wandb: 🚀 View run at https://wandb.ai/pengjuren99/QM9SP-PT/runs/ua5jfan1
+[[36m2025-09-25 17:08:17,871[0m][[34m__main__[0m][[32mINFO[0m] - [rank: 0] Starting training![0m
+[[36m2025-09-25 17:08:17,876[0m][[34mpytorch_lightning.utilities.rank_zero[0m][[32mINFO[0m] - You are using a CUDA device ('NVIDIA GeForce RTX 5090') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision[0m
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+train 110000, val 10000, test 8140
+┏┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳┳┳┓
+┃┃ Name                                                                     ┃┃┃┃
+┡╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇╇╇┩
+││ model                                                                    ││││
+││ model.representation_model                                               ││││
+││ model.representation_model.embedding                                     ││││
+││ model.representation_model.distance                                      ││││
+││ model.representation_model.distance_expansion                            ││││
+││ model.representation_model.distance_expansion.cutoff_fn                  ││││
+││ model.representation_model.neighbor_embedding                            ││││
+││ model.representation_model.neighbor_embedding.aggr_module                ││││
+││ model.representation_model.neighbor_embedding.embedding                  ││││
+││ model.representation_model.neighbor_embedding.distance_proj              ││││
+││ model.representation_model.neighbor_embedding.combine                    ││││
+││ model.representation_model.neighbor_embedding.cutoff                     ││││
+││ model.representation_model.attention_layers                              ││││
+││ model.representation_model.attention_layers.0                            ││││
+││ model.representation_model.attention_layers.0.aggr_module                ││││
+││ model.representation_model.attention_layers.0.layernorm                  ││││
+││ model.representation_model.attention_layers.0.act                        ││││
+││ model.representation_model.attention_layers.0.attn_activation            ││││
+││ model.representation_model.attention_layers.0.cutoff                     ││││
+││ model.representation_model.attention_layers.0.q_proj                     ││││
+││ model.representation_model.attention_layers.0.k_proj                     ││││
+││ model.representation_model.attention_layers.0.v_proj                     ││││
+││ model.representation_model.attention_layers.0.o_proj                     ││││
+││ model.representation_model.attention_layers.0.vec_proj                   ││││
+││ model.representation_model.attention_layers.0.dk_proj                    ││││
+││ model.representation_model.attention_layers.0.dv_proj                    ││││
+││ model.representation_model.attention_layers.1                            ││││
+││ model.representation_model.attention_layers.1.aggr_module                ││││
+││ model.representation_model.attention_layers.1.layernorm                  ││││
+││ model.representation_model.attention_layers.1.act                        ││││
+││ model.representation_model.attention_layers.1.attn_activation            ││││
+││ model.representation_model.attention_layers.1.cutoff                     ││││
+││ model.representation_model.attention_layers.1.q_proj                     ││││
+││ model.representation_model.attention_layers.1.k_proj                     ││││
+││ model.representation_model.attention_layers.1.v_proj                     ││││
+││ model.representation_model.attention_layers.1.o_proj                     ││││
+││ model.representation_model.attention_layers.1.vec_proj                   ││││
+││ model.representation_model.attention_layers.1.dk_proj                    ││││
+││ model.representation_model.attention_layers.1.dv_proj                    ││││
+││ model.representation_model.attention_layers.2                            ││││
+││ model.representation_model.attention_layers.2.aggr_module                ││││
+││ model.representation_model.attention_layers.2.layernorm                  ││││
+││ model.representation_model.attention_layers.2.act                        ││││
+││ model.representation_model.attention_layers.2.attn_activation            ││││
+││ model.representation_model.attention_layers.2.cutoff                     ││││
+││ model.representation_model.attention_layers.2.q_proj                     ││││
+││ model.representation_model.attention_layers.2.k_proj                     ││││
+││ model.representation_model.attention_layers.2.v_proj                     ││││
+││ model.representation_model.attention_layers.2.o_proj                     ││││
+││ model.representation_model.attention_layers.2.vec_proj                   ││││
+││ model.representation_model.attention_layers.2.dk_proj                    ││││
+││ model.representation_model.attention_layers.2.dv_proj                    ││││
+││ model.representation_model.attention_layers.3                            ││││
+││ model.representation_model.attention_layers.3.aggr_module                ││││
+││ model.representation_model.attention_layers.3.layernorm                  ││││
+││ model.representation_model.attention_layers.3.act                        ││││
+││ model.representation_model.attention_layers.3.attn_activation            ││││
+││ model.representation_model.attention_layers.3.cutoff                     ││││
+││ model.representation_model.attention_layers.3.q_proj                     ││││
+││ model.representation_model.attention_layers.3.k_proj                     ││││
+││ model.representation_model.attention_layers.3.v_proj                     ││││
+││ model.representation_model.attention_layers.3.o_proj                     ││││
+││ model.representation_model.attention_layers.3.vec_proj                   ││││
+││ model.representation_model.attention_layers.3.dk_proj                    ││││
+││ model.representation_model.attention_layers.3.dv_proj                    ││││
+││ model.representation_model.attention_layers.4                            ││││
+││ model.representation_model.attention_layers.4.aggr_module                ││││
+││ model.representation_model.attention_layers.4.layernorm                  ││││
+││ model.representation_model.attention_layers.4.act                        ││││
+││ model.representation_model.attention_layers.4.attn_activation            ││││
+││ model.representation_model.attention_layers.4.cutoff                     ││││
+││ model.representation_model.attention_layers.4.q_proj                     ││││
+││ model.representation_model.attention_layers.4.k_proj                     ││││
+││ model.representation_model.attention_layers.4.v_proj                     ││││
+││ model.representation_model.attention_layers.4.o_proj                     ││││
+││ model.representation_model.attention_layers.4.vec_proj                   ││││
+││ model.representation_model.attention_layers.4.dk_proj                    ││││
+││ model.representation_model.attention_layers.4.dv_proj                    ││││
+││ model.representation_model.attention_layers.5                            ││││
+││ model.representation_model.attention_layers.5.aggr_module                ││││
+││ model.representation_model.attention_layers.5.layernorm                  ││││
+││ model.representation_model.attention_layers.5.act                        ││││
+││ model.representation_model.attention_layers.5.attn_activation            ││││
+││ model.representation_model.attention_layers.5.cutoff                     ││││
+││ model.representation_model.attention_layers.5.q_proj                     ││││
+││ model.representation_model.attention_layers.5.k_proj                     ││││
+││ model.representation_model.attention_layers.5.v_proj                     ││││
+││ model.representation_model.attention_layers.5.o_proj                     ││││
+││ model.representation_model.attention_layers.5.vec_proj                   ││││
+││ model.representation_model.attention_layers.5.dk_proj                    ││││
+││ model.representation_model.attention_layers.5.dv_proj                    ││││
+││ model.representation_model.attention_layers.6                            ││││
+││ model.representation_model.attention_layers.6.aggr_module                ││││
+││ model.representation_model.attention_layers.6.layernorm                  ││││
+││ model.representation_model.attention_layers.6.act                        ││││
+││ model.representation_model.attention_layers.6.attn_activation            ││││
+││ model.representation_model.attention_layers.6.cutoff                     ││││
+││ model.representation_model.attention_layers.6.q_proj                     ││││
+││ model.representation_model.attention_layers.6.k_proj                     ││││
+││ model.representation_model.attention_layers.6.v_proj                     ││││
+││ model.representation_model.attention_layers.6.o_proj                     ││││
+││ model.representation_model.attention_layers.6.vec_proj                   ││││
+││ model.representation_model.attention_layers.6.dk_proj                    ││││
+││ model.representation_model.attention_layers.6.dv_proj                    ││││
+││ model.representation_model.attention_layers.7                            ││││
+││ model.representation_model.attention_layers.7.aggr_module                ││││
+││ model.representation_model.attention_layers.7.layernorm                  ││││
+││ model.representation_model.attention_layers.7.act                        ││││
+││ model.representation_model.attention_layers.7.attn_activation            ││││
+││ model.representation_model.attention_layers.7.cutoff                     ││││
+││ model.representation_model.attention_layers.7.q_proj                     ││││
+││ model.representation_model.attention_layers.7.k_proj                     ││││
+││ model.representation_model.attention_layers.7.v_proj                     ││││
+││ model.representation_model.attention_layers.7.o_proj                     ││││
+││ model.representation_model.attention_layers.7.vec_proj                   ││││
+││ model.representation_model.attention_layers.7.dk_proj                    ││││
+││ model.representation_model.attention_layers.7.dv_proj                    ││││
+││ model.representation_model.x_norms                                       ││││
+││ model.representation_model.x_norms.0                                     ││││
+││ model.representation_model.x_norms.1                                     ││││
+││ model.representation_model.x_norms.2                                     ││││
+││ model.representation_model.x_norms.3                                     ││││
+││ model.representation_model.x_norms.4                                     ││││
+││ model.representation_model.x_norms.5                                     ││││
+││ model.representation_model.x_norms.6                                     ││││
+││ model.representation_model.x_norms.7                                     ││││
+││ model.representation_model.vec_norms                                     ││││
+││ model.representation_model.vec_norms.0                                   ││││
+││ model.representation_model.vec_norms.1                                   ││││
+││ model.representation_model.vec_norms.2                                   ││││
+││ model.representation_model.vec_norms.3                                   ││││
+││ model.representation_model.vec_norms.4                                   ││││
+││ model.representation_model.vec_norms.5                                   ││││
+││ model.representation_model.vec_norms.6                                   ││││
+││ model.representation_model.vec_norms.7                                   ││││
+││ model.representation_model.out_norm                                      ││││
+││ model.representation_model.out_norm_vec                                  ││││
+││ model.output_model                                                       ││││
+││ model.output_model.output_network                                        ││││
+││ model.output_model.output_network.0                                      ││││
+││ model.output_model.output_network.0.vec1_proj                            ││││
+││ model.output_model.output_network.0.vec2_proj                            ││││
+││ model.output_model.output_network.0.update_net                           ││││
+││ model.output_model.output_network.0.update_net.0                         ││││
+││ model.output_model.output_network.0.update_net.1                         ││││
+││ model.output_model.output_network.0.update_net.2                         ││││
+││ model.output_model.output_network.0.act                                  ││││
+││ model.output_model.output_network.1                                      ││││
+││ model.output_model.output_network.1.vec1_proj                            ││││
+││ model.output_model.output_network.1.vec2_proj                            ││││
+││ model.output_model.output_network.1.update_net                           ││││
+││ model.output_model.output_network.1.update_net.0                         ││││
+││ model.output_model.output_network.1.update_net.1                         ││││
+││ model.output_model.output_network.1.update_net.2                         ││││
+││ model.representation_spec_model                                          ││││
+││ model.representation_spec_model.backbone                                 ││││
+││ model.representation_spec_model.backbone.W_P                             ││││
+││ model.representation_spec_model.backbone.W_P.0                           ││││
+││ model.representation_spec_model.backbone.W_P.1                           ││││
+││ model.representation_spec_model.backbone.W_P.2                           ││││
+││ model.representation_spec_model.backbone.dropout                         ││││
+││ model.representation_spec_model.backbone.encoder                         ││││
+││ model.representation_spec_model.backbone.encoder.layers                  ││││
+││ model.representation_spec_model.backbone.encoder.layers.0                ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.W_Q  ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.W_K  ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.W_V  ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.dropout_attn   ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_attn.0    ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_attn.1    ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_attn.2    ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.ff             ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.ff.0           ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.ff.1           ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.ff.2           ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.ff.3           ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.dropout_ffn    ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_ffn       ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_ffn.0     ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_ffn.1     ││││
+││ model.representation_spec_model.backbone.encoder.layers.0.norm_ffn.2     ││││
+││ model.representation_spec_model.backbone.encoder.layers.1                ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.W_Q  ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.W_K  ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.W_V  ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.dropout_attn   ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_attn.0    ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_attn.1    ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_attn.2    ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.ff             ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.ff.0           ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.ff.1           ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.ff.2           ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.ff.3           ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.dropout_ffn    ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_ffn       ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_ffn.0     ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_ffn.1     ││││
+││ model.representation_spec_model.backbone.encoder.layers.1.norm_ffn.2     ││││
+││ model.representation_spec_model.backbone.encoder.layers.2                ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.W_Q  ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.W_K  ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.W_V  ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.sdp… ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.self_attn.to_… ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.dropout_attn   ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_attn      ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_attn.0    ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_attn.1    ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_attn.2    ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.ff             ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.ff.0           ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.ff.1           ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.ff.2           ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.ff.3           ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.dropout_ffn    ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_ffn       ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_ffn.0     ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_ffn.1     ││││
+││ model.representation_spec_model.backbone.encoder.layers.2.norm_ffn.2     ││││
+││ model.representation_spec_model.head                                     ││││
+││ model.representation_spec_model.head.flatten                             ││││
+││ model.representation_spec_model.head.linear                              ││││
+││ model.representation_spec_model.head.dropout                             ││││
+││ model.representation_spec_model.reconstruct_heads                        ││││
+││ model.representation_spec_model.reconstruct_heads.0                      ││││
+││ model.representation_spec_model.reconstruct_heads.1                      ││││
+││ model.representation_spec_model.reconstruct_heads.2                      ││││
+││ model.representation_spec_model.out_norm                                 ││││
+││ model.output_model_noise                                                 ││││
+││ model.output_model_noise.output_network                                  ││││
+││ model.output_model_noise.output_network.0                                ││││
+││ model.output_model_noise.output_network.0.vec1_proj                      ││││
+││ model.output_model_noise.output_network.0.vec2_proj                      ││││
+││ model.output_model_noise.output_network.0.update_net                     ││││
+││ model.output_model_noise.output_network.0.update_net.0                   ││││
+││ model.output_model_noise.output_network.0.update_net.1                   ││││
+││ model.output_model_noise.output_network.0.update_net.2                   ││││
+││ model.output_model_noise.output_network.0.act                            ││││
+││ model.output_model_noise.output_network.1                                ││││
+││ model.output_model_noise.output_network.1.vec1_proj                      ││││
+││ model.output_model_noise.output_network.1.vec2_proj                      ││││
+││ model.output_model_noise.output_network.1.update_net                     ││││
+││ model.output_model_noise.output_network.1.update_net.0                   ││││
+││ model.output_model_noise.output_network.1.update_net.1                   ││││
+││ model.output_model_noise.output_network.1.update_net.2                   ││││
+││ model.pos_normalizer                                                     ││││
+└┴──────────────────────────────────────────────────────────────────────────┴┴┴┘
+Trainable params: 19.1 M                                                        
+Non-trainable params: 3                                                         
+Total params: 19.1 M                                                            
+Total estimated model params size (MB): 76                                      
+Modules in train mode: 265                                                      
+Modules in eval mode: 0                                                         
