@@ -11,7 +11,7 @@ train_val_test_split: [110000, 10000, null]      # 10_000
 num_workers: 20
 pin_memory: true
 
-data_arg: homo                # Additional dataset argument, e.g. target property for QM9 or molecule for MD17
+data_arg: lumo                # Additional dataset argument, e.g. target property for QM9 or molecule for MD17
 coord_files: null             # Custom coordinate files glob
 embed_files: null             # Custom embedding files glob
 energy_files: null            # Custom energy files glob
