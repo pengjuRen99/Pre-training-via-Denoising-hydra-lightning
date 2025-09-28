@@ -7,6 +7,8 @@ extras:
   energy_weight: 0.2            # Weighting factor for energies in the loss function
   force_weight: 0.8             # Weighting factor for forces in the loss function
   denoising_weight: 0.1         # Weighting factor for denoising in the loss function.
+  contrastive_weight: 0.0       # 加入对比和重构损失
+  reconstruct_weight: 0.0
 
 optimizer:
   _target_: torch.optim.AdamW
