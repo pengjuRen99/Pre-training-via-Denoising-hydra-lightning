@@ -3,7 +3,7 @@ _target_: src.models.module.LNNP   # LightningModule
 extras:
   lr_warmup_steps: 1000        # How many steps to warm-up over. Defaults to 0 for no warm-up
   ema_alpha_y: 0.05              # The amount of influence of new losses on the exponential moving average of y
-  ema_aplha_dy: 1.0             # The amount of influence of new losses on the exponential moving average of dy
+  ema_alpha_dy: 1.0             # The amount of influence of new losses on the exponential moving average of dy
   energy_weight: 0.2            # Weighting factor for energies in the loss function
   force_weight: 0.8             # Weighting factor for forces in the loss function
   denoising_weight: 0.1         # Weighting factor for denoising in the loss function.
@@ -58,7 +58,7 @@ net:
   position_noise_scale: 0.005              # Scale of Gaussian noise added to positions. 
 
   load_model: null                     # Path to model checkpoint to load before training
-  pretrained_model: null                      # If true, load a pretrained model from torchmd-net
+  pretrained_model: logs/train/runs/MD17_QM9SP_pretraining/checkpoints/step=399469-epoch=928-val_loss=0.1517-test_loss=0.3041-train_per_step=0.1429.ckpt                      # If true, load a pretrained model from torchmd-net
 
   prior_model: null       # Which prior model to use      et. Atomref
   # _target_: src.models.components.priors.Atomref

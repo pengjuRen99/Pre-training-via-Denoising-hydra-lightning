@@ -18,7 +18,7 @@ model_checkpoint:
 
 early_stopping:
   monitor: "val_loss" # both regression task
-  patience: 1500       # ANI1: 500, MD17: 300, PCQM4MV2: 150, QM9-FT: 1500, QM9: 1500
+  patience: 300       # ANI1: 500, MD17: 300, PCQM4MV2: 150, QM9-FT: 1500, QM9: 1500
   mode: "min"
 
 model_summary:
