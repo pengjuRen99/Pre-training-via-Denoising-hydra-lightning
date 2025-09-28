@@ -67,9 +67,19 @@ net:
 
   output_model_noise: null    # The type of output model for denoising    VectorOutput
     # _target_: null
-
   reduce_lr_when_bad: false
   use_dataset_md17: true
+  lr_factor: 0.8
+  lr_patience: 30
+
+  uv_model: null # SpecFormer
+  input_data_norm_type: minmax
+  output_model_spec: null
+  output_model_mol: null
+  # SpecFormer [uv, ir, raman]
+  patch_len: [20,50,50]
+  stride: [10,25,25]
+  mask_ratios: [0.1,0.1,0.1]
 
 # compile model for faster training with pytorch 2.0
 compile: false
