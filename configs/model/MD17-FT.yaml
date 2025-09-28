@@ -3,7 +3,7 @@ _target_: src.models.module.LNNP   # LightningModule
 extras:
   lr_warmup_steps: 1000        # How many steps to warm-up over. Defaults to 0 for no warm-up
   ema_alpha_y: 0.05              # The amount of influence of new losses on the exponential moving average of y
-  ema_aplha_dy: 1.0             # The amount of influence of new losses on the exponential moving average of dy
+  ema_alpha_dy: 1.0             # The amount of influence of new losses on the exponential moving average of dy
   energy_weight: 0.2            # Weighting factor for energies in the loss function
   force_weight: 0.8             # Weighting factor for forces in the loss function
   denoising_weight: 0.1         # Weighting factor for denoising in the loss function.
