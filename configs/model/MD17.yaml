@@ -7,6 +7,8 @@ extras:
   energy_weight: 0.2            # Weighting factor for energies in the loss function
   force_weight: 0.8             # Weighting factor for forces in the loss function
   denoising_weight: 0.         # Weighting factor for denoising in the loss function.
+  contrastive_weight: 0.0       # 加入对比和重构损失
+  reconstruct_weight: 0.0
 
 optimizer:
   _target_: torch.optim.AdamW
@@ -14,18 +16,18 @@ optimizer:
   lr: 0.001                               
   weight_decay: 0.0
 
-# scheduler:    # choices=['cosine', 'reduce_on_plateau']
-#   _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
-#   _partial_: true
-#   mode: min
-#   factor: 0.8          # Minimum learning rate before early stop
-#   patience: 30         # Patience for lr-schedule. Patience per eval-interval of validation
-#   min_lr: 1e-7        # Minimum learning rate before early stopping
-
-scheduler:
-  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+scheduler:    # choices=['cosine', 'reduce_on_plateau']
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
   _partial_: true
-  T_max: 400000       # Cosine length if lr_schedule is cosine.
+  mode: min
+  factor: 0.8          # Minimum learning rate before early stop
+  patience: 30         # Patience for lr-schedule. Patience per eval-interval of validation
+  min_lr: 1e-7        # Minimum learning rate before early stopping
+
+# scheduler:
+#   _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+#   _partial_: true
+#   T_max: 400000       # Cosine length if lr_schedule is cosine.
 
 net:
   # _target_: src.models.components.simple_dense_net.SimpleDenseNet   # equivariant-transformer
@@ -68,6 +70,17 @@ net:
 
   reduce_lr_when_bad: false
   use_dataset_md17: true
+  lr_factor: 0.8
+  lr_patience: 30
+
+  uv_model: null # SpecFormer
+  input_data_norm_type: minmax
+  output_model_spec: null
+  output_model_mol: null
+  # SpecFormer [uv, ir, raman]
+  patch_len: [20,50,50]
+  stride: [10,25,25]
+  mask_ratios: [0.1,0.1,0.1]
 
 # compile model for faster training with pytorch 2.0
 compile: false
